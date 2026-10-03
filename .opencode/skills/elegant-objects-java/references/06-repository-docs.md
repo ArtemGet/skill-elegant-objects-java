@@ -70,18 +70,41 @@ SPDX-License-Identifier = "MIT"
 ```
 
 ```gitignore
+# build output
 target/
+build/
+out/
+*.class
+*.jar
+
+# logs & run artifacts
+*.log
+*.exec
+*.tmp
+hs_err_pid*
+replay_pid*
+
+# tooling / IDE / OS
 node_modules/
 .claude/
 .idea/
 *.iml
 .vscode/
-*.class
+.DS_Store
+
+# secrets
+.env
+*.pem
+*.key
 ```
 
 - **[SHOULD]** Do not ignore files that are part of the build contract (wrapper, `.mvn/`).
-- **[SHOULD]** Never commit secrets, tokens, or local machine paths; keep credentials in Maven
-  profiles or environment variables, never in the POM or a committed config.
+- **[MUST]** Never commit logs, coverage dumps, build output, IDE/OS files, downloaded sources,
+  or run artifacts — they are noise and can leak data. Add them to `.gitignore` **before** the
+  first commit; if one slips in, remove it in a dedicated commit (never by rewriting history).
+- **[MUST]** Never commit secrets, tokens, API keys, `.env`, or local machine paths; keep
+  credentials in Maven profiles or environment variables, never in the POM or a committed config.
+  A token that leaks into history must be rotated immediately.
 
 ---
 

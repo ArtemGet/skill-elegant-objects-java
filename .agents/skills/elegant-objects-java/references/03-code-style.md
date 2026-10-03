@@ -418,3 +418,34 @@ Never blanket-suppress. Follow this ladder, in order:
 - [ ] Tests: `final` class, no fields, exactly one Hamcrest `assertThat`, no `Assert.assert*`.
 - [ ] No suppression that covers nothing; every suppression names a check + ticket.
 - [ ] `mvn --errors --batch-mode clean install -Pqulice` passes locally before commit.
+
+---
+
+## 13. Upgrading Qulice (new rules surface)
+
+A Qulice version bump is a **separate task** — its own issue/PR. Newer releases add and tighten
+rules, so the build fails with violations the old version tolerated.
+
+- **[MUST]** Fix every violation; do **not** add blanket `@SuppressWarnings`/`@checkstyle` or
+  exclude files/rules to go green. A narrow, commented, ticket-linked suppression is a last resort.
+- **[MUST]** `ConstructorsCodeFreeCheck`: a constructor must not call methods. Replace
+  `Collections.unmodifiable*` / `List.copyOf(...)` / `Arrays.asList(...)` with **constructor-based**
+  equivalents (`new ArrayList<>(...)`, `new LinkedList<>(...)`, a Cactoos `new ListOf<>(...)`), or
+  move preprocessing into a secondary `this(...)` ctor — never leave a method call in the ctor.
+- **[MUST]** `EmptyLineBeforeFirstMemberCheck`: a blank line after every type-opening brace.
+- **[MUST]** `ImplicitConstructorCheck` / `MissingJavadocMethodCheck`: declare an explicit ctor
+  with Javadoc; document every public ctor.
+- **[MUST]** `JavadocUnclosedParagraphCheck`: close `<p>` with `</p>` (e.g. `<p><img …></p>`).
+- **[MUST]** `JavadocTagsDotCheck`: no trailing dot in `@param`/`@return` text.
+- **[MUST]** `SingleUseConstantCheck`: inline a private constant used only once.
+- **[MUST]** `IllegalCatchCheck` / `AvoidCatchingGenericException`: never `catch (Exception)`;
+  in tests use `Assertions.assertThrows(SpecificException.class, …)`.
+- **[SHOULD]** `@FunctionalInterface` on every single-abstract-method interface.
+- **[SHOULD]** Test `equals(null)` / a foreign type without tripping PMD `EqualsNull`:
+  ```java
+  assertThat("not null", new Thing(), not(equalTo(null)));
+  assertThat("not foreign", new Thing(), not(equalTo("x")));
+  ```
+  This still calls `Thing.equals(null)` via the matcher — keep the assertion meaningful. Do **not**
+  weaken it to `assertNotEquals(thing, null)`, which only checks the object is non-null.
+- **[MUST]** After the upgrade, re-run the whole build and confirm the quality gates still pass.

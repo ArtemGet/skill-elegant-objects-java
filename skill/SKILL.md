@@ -124,7 +124,8 @@ Rules of engagement for an agent:
 - [ ] Coverage/mutation above the gate; no new static/null/`instanceof` in business logic.
 - [ ] Public API has interfaces; classes `final`; fields `private final`.
 - [ ] External interfaces documented (README/usage); no inline narration.
-- [ ] No secrets in history; SPDX header on new files; license unchanged/consistent.
+- [ ] No secrets in history; no logs / build artifacts / IDE files committed; `.gitignore` covers them.
+- [ ] SPDX header on new files; license unchanged/consistent.
 - [ ] Every review comment addressed: nits fixed in this PR, larger changes filed as a linked issue.
 
 ## Reference map (read only what the task needs)

@@ -374,3 +374,47 @@ OS×JDK matrix; 3) **Preflight merge** — the bot re-runs the PR gate on top of
 - [ ] `argLine` starts empty; JVM sizing via properties.
 - [ ] `*Test` surefire / `*ITCase` failsafe; `verify` fails the build.
 - [ ] Qulice, Jacoco and PIT gates in the POM, run by the single command.
+
+---
+
+## 14. Running long builds safely (agent guidance)
+
+Dependency resolution over a slow or legacy repository can look like a hang and stall an agent
+forever. Never run a bare, unbounded Maven command in the foreground.
+
+- **[MUST]** Always pass `--batch-mode` (and `-q` where noise is unwanted); never run Maven in a
+  mode that waits for interactive input.
+- **[MUST]** Bound the command with a timeout; a dependency download can block with no output.
+- **[MUST]** Do **not** pipe a long build into a buffering consumer (`Select-Object -Last`,
+  `head`, `tail`): it withholds all output until the process ends, so the build *looks* hung.
+  Redirect to a log file and poll the tail instead.
+- **[MUST]** Prefer Maven Central: legacy repos such as `oss.sonatype.org` (pulled in by some
+  parents) are slow and can stall. Force a mirror in `settings.xml`:
+  ```xml
+  <settings><mirrors><mirror>
+    <id>central</id><mirrorOf>*</mirrorOf>
+    <url>https://repo1.maven.org/maven2</url>
+  </mirror></mirrors></settings>
+  ```
+  then run `mvn -s settings.xml …`.
+- **[SHOULD]** Run heavy builds in the background writing to a log, and poll the process + tail:
+  ```bash
+  mvn --batch-mode clean install -Pqulice > build.log 2>&1 &
+  # poll: tail -n 5 build.log ; check the process is still alive
+  ```
+- **[SHOULD]** Reuse the local repository (`~/.m2`): after the first resolve, builds are fast.
+  When the network is unavailable, go offline with `-o`.
+- **[SHOULD]** If a build makes no progress for several minutes, kill it cleanly and retry — a
+  partial download is simply re-fetched.
+- **[NICE]** `-Dstyle.color=never` keeps logs clean; on Windows quote `-D` args (`"-DskipTests"`).
+
+### Anti-hang checklist
+
+```text
+[ ] --batch-mode, no interactive prompts
+[ ] timeout set on the command
+[ ] output to a log file, poll the tail (never Select-Object -Last)
+[ ] Central mirror via -s settings.xml (avoid slow legacy repos)
+[ ] background + alive-check for very long runs
+[ ] -o offline when deps are cached
+```
