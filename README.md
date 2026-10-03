@@ -68,22 +68,6 @@ after editing `skill/`.
 The working ceiling for a skill body is roughly 5k tokens (~300–500 lines of Markdown): everything
 beyond that is paid on every activation, so depth lives in files the agent opens on demand.
 
-## How this was built (pipeline)
-
-1. Cloned the 10 most popular Java (or Java-focused) `yegor256` repositories, incl. `takes`, `eo`,
-   `cactoos`, `qulice`.
-2. Downloaded every article from `yegor256.com/tag/java.html` and the key tags of
-   `yegor256.com/contents.html` (programming, oop, tdd/testing/tests, quality, maintainability,
-   style, devops, docker, maven, rultor, github, specs, pdd, xdsd, zerocracy, oss, management,
-   agile, architect, aop, restful, http, eolang) — 333 unique articles, plus `elegantobjects.org`.
-3. OCR'd the *Elegant Objects* book PDF (234 scanned pages) with Tesseract.
-4. One agent extracted the book's postulates with examples; eight parallel agents added findings
-   from the articles (isolated); a merge agent combined them; seven agents analysed the codebases
-   for real CI/CD, testing, style, repository and tooling practice; a final agent produced the
-   superset knowledge base and the distilled rulebook.
-5. Wrote the lean core (`SKILL.md`) by hand and the task-scoped reference guides, then deployed the
-   portable layout to each runtime.
-
 ## Sources
 
 - https://www.elegantobjects.org
