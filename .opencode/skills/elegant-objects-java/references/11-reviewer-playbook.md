@@ -18,6 +18,16 @@ How an independent reviewer (a human, or an agent subagent) works a pull request
 - **Process** — branch names the issue, commits reference `#<issue>`, one concern, no history rewrite.
 - **Gates** — Qulice + jtcop + coverage green; CI runs visible.
 
+## Checking CI (do not hang the session)
+
+- Read the checks via the GitHub MCP (`pull_request_read` → `get_check_runs`). Never call the GitHub
+  API with a raw token — MCP only.
+- If a required check is **red** and its log is not reachable through MCP, record the failing check
+  name + job URL and STOP to report it — do **not** try to reproduce the full CI locally.
+- Never run a foreground build (or `docker run`/`docker pull` of a large image): it blocks with no
+  output and looks hung. If a local check is truly unavoidable, run it in the background with a log
+  file and a timeout, and poll the tail in short increments (see `references/04-build-maven.md` §14).
+
 ## How to report
 
 - Post a review; add line comments for anything specific.

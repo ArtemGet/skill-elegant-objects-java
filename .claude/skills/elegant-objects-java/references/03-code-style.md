@@ -449,3 +449,10 @@ rules, so the build fails with violations the old version tolerated.
   This still calls `Thing.equals(null)` via the matcher — keep the assertion meaningful. Do **not**
   weaken it to `assertNotEquals(thing, null)`, which only checks the object is non-null.
 - **[MUST]** After the upgrade, re-run the whole build and confirm the quality gates still pass.
+- **[MUST]** Trust CI over a local Windows run for ErrorProne-affected rules. Qulice 0.36's
+  ErrorProne integration can fail to decode its forked output on Windows
+  (`java.nio.charset.MalformedInputException`) and silently **drop** findings, so a Windows-local
+  `-Pqulice` build can be green while Linux CI fails on a real violation (observed: ErrorProne
+  `AvoidCommonTypeNames` for a nested class shadowing `java.lang.Void`). When CI is red but local is
+  green, fetch the CI job log (GitHub MCP `get_job_logs`) and fix what it reports — do not trust the
+  local green. Renaming the clashing type (e.g. `Void` → `Empty`) is the fix; do not suppress.
