@@ -1,0 +1,15 @@
+# Downloaded study sources (third-party: articles, repos, book) — not published
+code
+scripts
+analysis
+articles
+books
+
+# Working artifacts
+node_modules
+.pylibs
+jacoco.exec
+*.log
+
+# IDE
+.idea
